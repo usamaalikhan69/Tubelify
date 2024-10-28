@@ -1,0 +1,16 @@
+{
+  "name": "backendtube",
+  "version": "1.0.0",
+  "description": "Professional backend project ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javscript",
+    "backend",
+    "mernstack"
+  ],
+  "author": "Usama Ali Khan",
+  "license": "ISC"
+}
