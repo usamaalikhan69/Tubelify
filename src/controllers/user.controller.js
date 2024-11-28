@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken"
 
 
 
-// METHOD FOR USING GEBERATE AND ACCESSTOKEN
+// METHOD FOR USING GENERATE AND ACCESSTOKEN
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -23,6 +23,8 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 }
 
+
+// METHOD FOR REGISTER   LOGIN LOGOUT AND REFRESH ACCESS TOKEN OF  USER
 
  const registerUser = asyncHandler(async (req , res) => {
 
@@ -228,14 +230,154 @@ throw new ApiError(401 , "Unauthorized Request");
 
 }) 
 
+// METHOD FOR USER PASSWORD UPDATE
+
+ const changeCurrentPassword = asyncHandler(async(req , res) => {
+    
+  const {currentpassword , newPassword} = req.body
+
+     const user =     await  User.findById(req.user._id)
+      
+     const isPasswordCorrect = await user.isPasswordCorrect(currentpassword)
+
+     if (!isPasswordCorrect) {
+       throw new ApiError(401 , "Invalid Current Password");
+     }
+
+      user.password = newPassword
+
+      await user.save({validateBeforeSave: false})
+
+      return res.
+      status(200)
+      .json( 
+        new ApiResponse(200 , {} , "password change has been Successfully")
+       )
+ }) 
+
+// METHOD FOR GET CURRENT USER
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+ 
+  res.
+  status(200)
+  .json(
+    new ApiResponse(200 , req.user , "User Details")
+  )
+})
+
+
+// METHOD FOR PROFILE  UPDATE 
+
+const updateUserProfile = asyncHandler(async (req , res)=> {
+
+  const {fullName , email}  =  req.body
+
+  if (!(fullName || email)) {
+    throw new ApiError(402 , "Full Name or Email is required ");
+    
+  }
+  
+  const user =  await User.findByIdAndUpdate(
+    req.user?._id, 
+    {
+         $set: {
+      fullName,
+      email
+    }
+  } , {
+    new: true,
+  } 
+
+  ).select("-password")
+
+return res
+.status(200)
+.json(
+  new ApiResponse(200 , user , "User Profile Updated Successfully")
+)
 
 
 
+})
+ 
+// METHOD FOR FILES UPDATE AVATAR AND COVERIAMGE 
 
+const updateUserAvatar = asyncHandler(async(req , res) => {
+ 
+ const avatarLocalPath = req.file?.avatar
+
+ if (!avatarLocalPath) {
+  throw new ApiError(400 , "Avatar is required");
+ }
+
+ const avatar =   await uploadToCloudinary(avatarLocalPath)
+
+ if (!avatar.url) {
+  throw new ApiError(400 , "Error while uploading on avatar on cloudinary ");
+ }
+  
+ const user = await User.findByIdAndUpdate(
+  req.user?._id,
+  {
+    $set: {
+      avatar: avatar.url
+    }
+  } , 
+  {
+    new: true,
+  }
+).select("-password") 
+
+return res
+.status(200)
+.json(
+  new ApiResponse(200 , user , "User Avatar Updated Successfully")
+ ) 
+})
+
+
+const updateUserCoverImage = asyncHandler(async(req , res) => {
+ 
+  const coverImageLocalPath = req.file?.avatar
+ 
+  if (!coverImageLocalPath) {
+   throw new ApiError(400 , "Cover image is required");
+  }
+ 
+  const coverImage =   await uploadToCloudinary(coverImageLocalPath)
+ 
+  if (!coverImage.url) {
+   throw new ApiError(400 , "Error while uploading on Cover image on cloudinary ");
+  }
+   
+  const user = await User.findByIdAndUpdate(
+   req.user?._id,
+   {
+     $set: {
+      coverImage: coverImage.url
+     }
+   } , 
+   {
+     new: true,
+   }
+ ).select("-password") 
+ 
+ return res
+ .status(200)
+ .json(
+   new ApiResponse(200 , user , "User Cover Image Updated Successfully")
+  ) 
+ })
 
 export  {
   registerUser,
   loginUser,
   logoutUser,
-  refreshAccessToken
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  updateUserProfile,
+  updateUserAvatar,
+  updateUserCoverImage
 }
