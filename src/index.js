@@ -1,5 +1,6 @@
 import { configDotenv } from "dotenv";
 import { connectDataBase } from "./db/index.js";
+import { app } from "./app.js";
 
 
 configDotenv({
@@ -7,6 +8,25 @@ configDotenv({
 })
 
 connectDataBase()
+.then(()=> 
+{
+    // SERVER PORT STORE IN VARIABLE 
+ const serverPort =  process.env.PORT || 3000
+
+//  APP SERVER FUNCTION  TO START THE SERVER  
+ app.listen( serverPort , () => 
+{
+    // LOG SUCCES MESSAGE YOUR SERVER IS RUNNING ON THIS PORT 
+    console.log(`Your server  is running on this port  ${ serverPort} `)
+})
+
+})
+.catch((error)=> 
+{
+    // LOG AN ERROR MESSAGE CONNECT WITH SERVER
+    throw new Error(`THERE is ERORR IN SERVER IN MAIN FILE TO CONNECT WITH SERVOR  ${error.message}`);
+    
+})
 
 
 
