@@ -4,6 +4,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import { User } from "../models/user.model.js";
 import { uploadToCloudinary } from "../utils/Cloudinary.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 
 
@@ -329,6 +330,10 @@ const updateUserAvatar = asyncHandler(async(req , res) => {
   }
 ).select("-password") 
 
+
+ deleteAvatar = function () { return this. Avatar !== undefined ? this. Avatar. Destroy() : undefined }
+
+
 return res
 .status(200)
 .json(
@@ -370,6 +375,164 @@ const updateUserCoverImage = asyncHandler(async(req , res) => {
   ) 
  })
 
+
+ const getUserChannelprofile = asyncHandler(async (req , res)=> {
+      
+   const { username } = req.params
+
+   if (!username?.trim()){
+    throw new ApiError(400 , "Username not found ");
+   }
+
+   const channelofUserProfile =   await User.aggregate(
+    [
+      {
+        $match: {
+          username: username?.toLowerCase()
+        }
+      },
+      {
+        $lookup: {
+          from: 'subscriptions',
+          localField: '_id',
+          foreignField:'channelSubscriber',
+          as:'subscribers'
+        }
+      },{
+        $lookup: {
+          from: 'subscriptions',
+          localField: '_id',
+          foreignField:'subscriber',
+          as:'subscribeTo'
+        }
+      } , 
+      {
+        $addFields: {
+          subscribersCount: {
+            $size: "$subscribers"
+          },
+          channelSubscribersCount: {
+
+            $size: "$subscribeTo"
+          },
+          isSubscribed: {
+            $cond: {
+              if: { in: [req.user?._id , "$subscribers.subscriber"]},
+              then: true,
+              else: false
+            }
+          }
+          
+          
+        }
+      },
+      {
+        $project: {
+          fullName: 1,
+          username: 1,
+          email: 1,
+          avatar: 1,
+          coverImage: 1,
+          subscribersCount: 1,
+          channelSubscribersCount: 1,
+          isSubscribed: 1,
+        }
+      }
+
+
+
+    ]
+  )
+    if (!channelofUserProfile?.length){
+      throw new ApiError(404 , "User not found ");
+    }
+
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200 , channelofUserProfile[0], "User Channel Profile")
+    )
+
+
+ })
+
+ const getUserWatchHistory = asyncHandler(async (req , res)=> {
+   
+     const user  = User.aggregate(
+      [
+       { 
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.user._id)
+        }
+       }, {
+        $lookup: {
+          from: 'videos',
+          localField: '_id',
+          foreignField:'watchHistory',
+          as: 'watchHistory',
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: 'owner',
+                foreignField: '_id',
+                as: 'owner',
+                pipeline: [
+                  {
+                    $project: {
+                     fullName: 1,
+                     username: 1,
+                     avatar: 1
+                    }
+                  }
+                ]
+              }    
+            }
+          ]
+        }
+       },
+       {
+        $addFields: {
+          owner: {
+            $arrayElemAt: [ "$owner", 0]
+          }
+        }
+       } 
+
+      ]
+    )
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200 , user[0].watchHistory, "User Watch History")
+    )
+
+ })
+
+
+const  getUserTweets = asyncHandler(async ( req , res ) => {
+
+  const userTweet =   await User.aggregate([
+    {
+    $match: {
+      _id: new mongoose.Types.ObjectId(req.user._id)
+    },
+  }
+  , 
+  {
+      $lookup: {
+        from: 'User',
+        localField: '_id',
+        foreignField: 'owner',
+        as: 'tweets'
+      }
+    }
+    
+   ])
+}) 
+ 
+
+
 export  {
   registerUser,
   loginUser,
@@ -379,5 +542,8 @@ export  {
   getCurrentUser,
   updateUserProfile,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  getUserChannelprofile,
+  getUserWatchHistory,
+  getUserTweets
 }
