@@ -1,18 +1,24 @@
 import { Router } from 'express';
 import {
     getLikedVideos,
-    toggleCommentLike,
-    toggleVideoLike,
-    toggleTweetLike,
+    toggleLike,
 } from "../controllers/like.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
 const router = Router();
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
+router.use(verifyJWT); 
 
-router.route("/toggle/v/:videoId").post(toggleVideoLike);
-router.route("/toggle/c/:commentId").post(toggleCommentLike);
-router.route("/toggle/t/:tweetId").post(toggleTweetLike);
+router.put('/like/:type/:id', asyncHandler(async (req, res) => {
+    const { type, id } = req.params;
+
+    try {
+         toggleLike(req, res, { type, id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred' });
+    }
+}));
+
 router.route("/videos").get(getLikedVideos);
 
-export default router
+export default router;
