@@ -240,7 +240,13 @@ const updatePlaylist = asyncHandler(async (req, res) => {
 
     await playlist.save();
 
-    return res.status(200).json(new ApiResponse(200, playlist, 'Playlist updated successfully'));
+    return res.
+    status(200)
+    .json(
+        
+        new ApiResponse(200, playlist, 'Playlist updated successfully'
+
+        ));
 });
 
 export {
