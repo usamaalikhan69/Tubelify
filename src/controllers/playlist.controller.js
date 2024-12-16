@@ -198,10 +198,10 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 const deletePlaylist = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
     // TODO: delete playlist
+    
     if (!isValidObjectId(playlistId)) {
         throw new ApiError(404, 'Invalid playlist id');
     }
-    // Check if playlist exists and belongs to the user
     
     const playlist = await Playlist.findOne({ _id: playlistId, owner: req.user._id });
     if (!playlist) {
