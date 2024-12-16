@@ -46,7 +46,11 @@ password: {
 },
 refreshToken: {
     type: String
-}
+},
+subscribedChannels: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Subscription'
+  }]
 }, {timestamps: true})
 
 userSchema.pre("save" , async function (next) {
