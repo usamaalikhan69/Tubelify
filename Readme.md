@@ -6,11 +6,11 @@ This project implements the backend API for Tubelify, a video-sharing platform i
 
 ### Technologies Used:
 
-** Node.js **
-** Express.js **
-** Mongoose (MongoDB Object Modeling) **
-** Cloudinary (for video storage) **
-** JWT (JSON Web Token) for authentication **
+** Node.js **  
+** Express.js **  
+** Mongoose (MongoDB Object Modeling) **  
+** Cloudinary (for video storage) **  
+** JWT (JSON Web Token) for authentication **  
 
 #### Code Snippets:
 
